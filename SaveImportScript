@@ -1,0 +1,71 @@
+/*HOW TO
+This script is for adding your cars to competitors.db. If you have a Competitors.db and want thumbnails, you need the other script!
+
+Find your Competitors.db in SteamLibrary\steamapps\common\Automation\UE427\AutomationGame\Content\GameData\Camso\tycoon
+  Or go to your stream library, Browse Local Files for Automation, and follow the above file path
+Make a backup copy!
+Open Competitors.db in SQLite
+Next, click "Attach Database" on the top bar of SQLite
+Find your save file in %localappdata%\AutomationGame\Saved\UserData\Campaign, open it, and when asked what you want to call it, enter 'savegame' (no quotes)
+Next find the "Execute SQL" tab, it's one row BELOW the Attach Database button
+Copy this script into the space there, and run it! (F5)
+Before you close SQLite, click "Write Changes" on top!
+Now your cars are part of Competitors.db. Thumbnails will not appear until they are part of your SAVE GAME FILE, so you need the other script for that.
+
+If you want to add cars from sandbox, select that instead of your campaign save game, and make the changes marked below. You will need to know your company name.
+*/
+
+--Script for competitors.db only. Thumbnails to savefile not included.
+--Insert companies and car data. CompanySize and CompanyProfile still have to be made from scratch after this.
+insert into Companies
+	select * from savegame.Companies;
+insert into Models
+	select * from savegame.Models;
+insert into CarProjects
+	select * from savegame.CarProjects;
+insert into Families
+	select * from savegame.Families;
+insert into Variants
+	select * from savegame.variants;
+insert into Trims
+	select * from savegame.Trims;
+insert into TrimResults
+	select * from savegame.TrimResults;
+insert into EngineResults
+	select * from savegame.EngineResults;
+insert into EngineCurves
+	select * from savegame.EngineCurves;
+insert into CarFacelifts
+	select * from savegame.CarFacelifts;
+insert into TrimSlots
+	select * from savegame.TrimSlots;
+insert into TrimEmissions
+	select * from savegame.TrimEmissions; --Pretty sure this isn't actually used by competitors
+insert into CarThumbnails
+	select * from savegame.CarThumbnails; --This doesn't work right now but I'm leaving it in, in case an update uses it
+
+/*This will create a CompanySize table based on your highest market awareness.
+Your company will not be visible in-game for any time frame which your save file did not play. EG if your save file is in Dec 1960, your company will disappear Jan 1961. If you started in 1960 your company will not be visible before then.
+The Size value derived from your awareness is a placeholder. It is linear, but the real equation used is a curve. Note to self make this more accurate later.
+*/
+insert into CompanySize (CUID, Year, Size) 
+select CUID, ((internaldays-4321.0)/(360))+1946, MAX(AwarenessTotal*16) from savegame.companyawareness
+group by InternalDays;
+
+--If your company is a sandbox company, comment out the above paragraph and use this instead:
+--This copies the size curve from the NPC company FamilySmall 3 Fruinia, other companies can be used as well. Look in the Companies table or in-game sankey chart for names.
+/*
+insert into CompanySize (CUID, Year, Size)
+	Select (select uid from savegame.companies where name = 'sandbox'), Year, Size
+from CompanySize
+	where CUID = (select uid from companies where name = 'FamilySmall 3 Fruinia');
+*/
+
+/*Profile probably does nothing. Leaving it null still feels like bad juju.
+Color appears in the sankey chart. Last two FF is alpha channel, leave it FF.
+Use an online hex color picker and set the first 6 characters to whatever you want.*/		
+insert into CompanyProfile (CUID, Profile, ColourHex)
+	Select (select uid from savegame.companies), 'Generalist', 'FFFFFFFF'
+--IF YOUR COMPANY IS A SANDBOX COMPANY:
+-- Replace the the above line with this one and the name of your company:
+-- 	Select (select uid from savegame.companies where name = 'sandbox'), 'Generalist', 'FFFFFFFF'
