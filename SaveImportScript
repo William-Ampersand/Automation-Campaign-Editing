@@ -13,6 +13,8 @@ Before you close SQLite, click "Write Changes" on top!
 Now your cars are part of Competitors.db. Thumbnails will not appear until they are part of your SAVE GAME FILE, so you need the other script for that.
 
 If you want to add cars from sandbox, select that instead of your campaign save game, and make the changes marked below. You will need to know your company name.
+
+PRO TIP: If two trims in a facelift have the SAME TARGET MARKET, then ONLY ONE WILL BE USED! Set different target markets for each trim!
 */
 
 --Script for competitors.db only. Thumbnails to savefile not included.
