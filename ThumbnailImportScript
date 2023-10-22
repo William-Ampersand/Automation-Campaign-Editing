@@ -1,0 +1,30 @@
+/*
+This is for adding thumbnail pictures to your savegame!
+First create a save game, and place your modified Competitors.db in the tycoon folder. SteamLibrary\steamapps\common\Automation\UE427\AutomationGame\Content\GameData\Camso\tycoon
+  Or go to your stream library, Browse Local Files for Automation, and follow the above file path
+Next, click "Attach Database" on the top bar of SQLite
+Find your save file in %localappdata%\AutomationGame\Saved\UserData\Campaign, open it, and when asked what you want to call it, enter 'savegame' (no quotes)
+Next find the "Execute SQL" tab, it's one row BELOW the Attach Database button
+Copy this script into the space there, and run it! (F5)
+Before you close SQLite, click "Write Changes" on top!
+
+Now your save file contains the thumbnails for competitor cars, so they will actually look like cars! You have to do this for each save file you want to play on with human competitors, or you will see default blank thumbnails!
+*/
+insert into savegame.models
+	select * from models where UID in (
+			select MUID from trims where uid in (select TUID from carthumbnails));
+
+insert into savegame.families
+	select * from families where uid in 
+		(select FUID from variants where UID in (select VUID from trims where UID in (select TUID from carthumbnails)));
+
+insert into savegame.Variants
+	select * from variants where UID in 
+		(select VUID from trims where UID in (select TUID from carthumbnails));
+
+insert into savegame.trims
+	select * from trims where UID in 
+		(select TUID from CarThumbnails);
+
+insert into savegame.CarThumbnails
+	select * from CarThumbnails;
